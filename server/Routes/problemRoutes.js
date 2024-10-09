@@ -1,70 +1,68 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const dotenv = require('dotenv');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+dotenv.config();
 
-const callOpenAI = async (prompt) => {
-  try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/completions',
-      {
-        model: 'gpt-3.5-turbo', 
-        prompt: prompt,
-        max_tokens: 60,
-        temperature: 0.0, 
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-      }
-    );
+router.post("/gemini-model", async (req, res) => {
+  const problem = req.body.userProblem;
+  const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    return response.data.choices[0].text.trim();
-  } catch (error) {
-    console.error('OpenAI API error:', error.response ? error.response.data : error.message);
-    throw new Error('Failed to communicate with OpenAI API');
-  }
-};
+  const prompt = `
+  This is the problem: ${problem}
 
-// POST /api/problems/submit
-router.post('/submit', async (req, res) => {
-  const { userId, description } = req.body;
+  Please classify the problem and provide keywords for the following criteria:
 
-  if (!userId || !description) {
-    return res.status(400).json({ message: 'userId and description are required.' });
+  **Category:** Identify the main category of the problem. You may include any relevant keywords that describe the issue.
+  **Urgency:** Assess the urgency of the situation and provide a keyword that best reflects it (e.g., low, medium, high).
+  **Severity:** Determine the severity of the situation and provide a keyword that best describes it (e.g., low, medium, high).
+
+  Please respond with a JSON object containing:
+  {
+    "category": "<keywords>",
+    "urgency": "<keyword>",
+    "severity": "<keyword>"
   }
 
+  Example Classification:
+  {
+    "category": "Injury, Hospital, Flood",
+    "urgency": "High",
+    "severity": "Medium"
+  }
+  `;
+
   try {
-    const categoryPrompt = `Categorize the following disaster-related problem into one of the predefined categories (e.g., Health, Food, Shelter, Water, etc.):\n\nProblem: ${description}\n\nCategory:`;
-    const category = await callOpenAI(categoryPrompt);
+    const result = await model.generateContent(prompt);
+    const classificationResult = result.response.text();
+    console.log("Raw classification result:", classificationResult); // Log the raw response
 
-    const severityPrompt = `Assess the severity of the following disaster-related problem on a scale of 1 to 10, where 10 is the most severe:\n\nProblem: ${description}\n\nSeverity (1-10):`;
-    let severityStr = await callOpenAI(severityPrompt);
-    let severity = parseInt(severityStr);
-    if (isNaN(severity) || severity < 1 || severity > 10) severity = 5; 
+    // Sanitize the response by removing markdown syntax
+    const sanitizedResult = classificationResult.replace(/```json|```/g, '').trim();
+    
+    // Attempt to parse the sanitized classification result
+    let classification;
+    try {
+      classification = JSON.parse(sanitizedResult);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return res.status(400).json({ error: "Invalid response format from AI model." });
+    }
 
-    const priorityPrompt = `Assign a priority score between 1 and 10 for addressing the following disaster-related problem. Consider the severity and urgency:\n\nProblem: ${description}\n\nSeverity: ${severity}\n\nPriority (1-10):`;
-    let priorityStr = await callOpenAI(priorityPrompt);
-    let priority = parseInt(priorityStr);
-    if (isNaN(priority) || priority < 1 || priority > 10) priority = 5; 
-
-   
-
-
-
-  
-    res.status(201).json({
-      category,
-      severity,
-      priority,
+    return res.status(200).json({
+      category: classification.category,
+      urgency: classification.urgency,
+      severity: classification.severity,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error generating classification:", error);
+    return res.status(500).json({ error: "An error occurred while classifying the problem statement." });
   }
 });
 
-
-
-
+router.post("/publish-post",async (req,res)=>{
+  console.log(req.body);
+  
+})
 module.exports = router;
