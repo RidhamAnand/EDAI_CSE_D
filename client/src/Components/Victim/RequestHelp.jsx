@@ -1,4 +1,4 @@
-import { Button, TextField } from '@mui/material';
+import { Alert, Button, Snackbar, TextField, CircularProgress, LinearProgress } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -7,7 +7,9 @@ import { useRequest } from '../../Contexts/RequestContext';
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet'; 
+import L from 'leaflet';
+import url from '../../apiConfig';
+
 
 // Set default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -47,6 +49,7 @@ function RequestHelp() {
   ];
 
   const [activeScreen, setActiveScreen] = useState(0); // Start with description screen
+  const [loading, setLoading] = useState(false); // Loading state
 
   const WriteDescription = () => {
     const { description, setDescription } = useRequest();
@@ -55,10 +58,10 @@ function RequestHelp() {
     const selectLocation = () => {
       setDescription(currentDescription);
       setActiveScreen(1); // Move to select location
-    }
+    };
 
     return (
-      <div className='shadow-lg p-4 mx-8'>
+      <div className='bg-white rounded-lg shadow-lg p-4 mx-8'>
         <TextField
           label="Describe Your Problem"
           multiline
@@ -88,13 +91,145 @@ function RequestHelp() {
         </Button>
       </div>
     );
+  };
+
+
+  const PreviewPublish = () => {
+
+    const { description, setDescription, location, setLocation, categories, setCategories, severity, setSeverity, urgency, setUrgency } = useRequest();
+
+
+
+    const getUrgencyClass = (urgency) => {
+      switch (urgency) {
+        case 'High':
+          return 'text-red-500';
+        case 'Medium':
+          return 'text-yellow-300';
+        case 'Low':
+          return 'text-green-600';
+        default:
+          return 'bg-gray-200'; // fallback
+      }
+    };
+
+    const publishPost =  async ()=>{
+      try{
+        const reponse = await axios.post(url + "publish-post",{
+            problemStatement:description,
+            problemUrgency:urgency,
+            problemCategory:categories,
+            problemSeverity:severity,
+            problemLocation:location,
+        })
+      }catch(e){
+        console.log(e);
+        
+      }
+    }
+
+    return (<div className=''>
+
+
+      <div className=' bg-white py-6 px-6 mx-10 shadow-lg flex flex-col gap-8 rounded-lg'>
+
+
+        <div>
+          <h1 className='  text-3xl mb-4 font-medium'>
+            Problem Statement
+          </h1>
+
+
+          <p>
+            {description}
+          </p>
+
+        </div>
+
+
+        <hr />
+
+        <div>
+          <p className='text-xl font-medium'>
+            Assigned Categories
+          </p>
+          <div className='flex flex-row gap-2 my-3'>
+            {categories.map((k, index) => {
+              return (<div key={index} className='border border-gray-400 rounded-sm p-2'>
+                <p className='text-xs'>{k}</p>
+              </div>)
+            })}
+
+          </div>
+
+
+        </div>
+
+        <hr />
+        {/* severity and urgency */}
+
+
+
+
+        <div className='flex flex-row gap-10'>
+
+
+          <div>
+            <p className='text-xl font-medium'>
+              Urgency
+            </p>
+            <div className='flex flex-row gap-2 my-3'>
+              <div >
+                <p className={`text-xl font-medium ${getUrgencyClass(urgency)}`}>{urgency}</p>
+              </div>
+            </div>
+          </div>
+
+
+          <div>
+            <p className='text-xl font-medium'>
+              Severity
+            </p>
+            <div className='flex flex-row gap-2 my-3'>
+              <div >
+                <p className={`text-xl font-medium ${getUrgencyClass(severity)}`}>{severity}</p>
+              </div>
+            </div>
+
+
+
+
+          </div>
+
+
+
+        </div>
+
+        <div>
+
+          <Button onClick={publishPost} disableElevation sx={{
+            textTransform: "capitalize"
+          }} fullWidth variant='contained' >Publish</Button>
+          <Button onClick={()=>{setActiveScreen(1)}} fullWidth >Back</Button>
+        </div>
+
+      </div>
+    </div>)
+
   }
 
   const SelectLocation = () => {
+    const [isFetchCategoryLoading, setIsFetchCategoryLoading] = useState(false);
     const [position, setPosition] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    const { description, setLocation, setCategories, setSeverity, setUrgency } = useRequest();
+
     useEffect(() => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -102,52 +237,116 @@ function RequestHelp() {
             setPosition([pos.coords.latitude, pos.coords.longitude]);
           },
           () => {
-            alert("Unable to retrieve your location");
+            showSnackbar("Unable to retrieve your location", "error");
             setPosition([51.505, -0.09]); // Default location
           }
         );
       } else {
-        alert("Geolocation is not supported by this browser.");
+        showSnackbar("Geolocation is not supported by this browser.", "error");
         setPosition([51.505, -0.09]); // Default location
       }
     }, []);
-    
+
+    const showSnackbar = (message, severity) => {
+      setSnackbarMessage(message);
+      setSnackbarSeverity(severity);
+      setSnackbarOpen(true);
+    };
+
     const handleSearch = async () => {
       if (searchTerm) {
-        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-          params: {
-            q: searchTerm,
-            format: 'json',
-            limit: 5,
-          },
-        });
-        setSearchResults(response.data);
+        try {
+          const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+            params: {
+              q: searchTerm,
+              format: 'json',
+              limit: 5,
+            },
+          });
+          setSearchResults(response.data);
+        } catch (error) {
+          console.error('Error fetching location:', error);
+          showSnackbar('Failed to fetch location results. Please try again.', 'error');
+        }
       }
     };
-  
+
     const handleResultClick = (result) => {
       const newPosition = [result.lat, result.lon];
       setPosition(newPosition);
       setSearchResults([]);
       setSearchTerm('');
     };
-  
+
     const MapClick = () => {
       const map = useMap();
       useMapEvents({
         click: (event) => {
           const newPosition = [event.latlng.lat, event.latlng.lng];
           setPosition(newPosition);
-          map.setView(newPosition, map.getZoom()); // Set map view to clicked location
+          map.setView(newPosition, map.getZoom());
         },
       });
       return null;
     };
-  
-    if (!position) return <div>Loading...</div>;
-  
+
+
+
+    const handleNext = async () => {
+      setIsFetchCategoryLoading(true);
+      if (!description) {
+        showSnackbar('Please provide a problem description before proceeding.', 'warning');
+        return;
+      }
+      if (!position) {
+        showSnackbar('Please select a location before proceeding.', 'warning');
+        return;
+      }
+      try {
+        // setLoading(true); // Start loading
+        const response = await axios.post(url + 'gemini-model', {
+          userProblem: description,
+        });
+        console.log(response);
+        setSeverity(response.data.severity);
+        setUrgency(response.data.urgency);
+        const catArr = response.data.category.split(',').map(topic => topic.trim());
+        setCategories(catArr);
+        setLocation(position);
+
+        setActiveScreen(2)
+      } catch (error) {
+        console.error('Error fetching category:', error);
+        if (error.response) {
+          // Handle the case where the response is returned but there's an error status
+          switch (error.response.status) {
+            case 400:
+              showSnackbar('Please provide a relevant problem statement', 'error');
+              break;
+            case 404:
+              showSnackbar('Category not found', 'error');
+              break;
+            case 500:
+              showSnackbar('Internal server error. Please try again later.', 'error');
+              break;
+            default:
+              showSnackbar('An unexpected error occurred', 'error');
+          }
+        } else {
+          // Handle network errors or other unexpected issues
+          showSnackbar('Network error. Please check your connection.', 'error');
+        }
+        setIsFetchCategoryLoading(false)
+      }
+    }
+    const handleCloseSnackbar = () => {
+      setSnackbarOpen(false);
+    };
+
+    if (!position) return <div><LinearProgress color='inherit' /></div>;
+
     return (
-      <div>
+      <div className='bg-white px-8 py-6 rounded-lg'>
         <TextField
           label="Search for a location"
           value={searchTerm}
@@ -159,8 +358,10 @@ function RequestHelp() {
           }}
           fullWidth
         />
-        <Button onClick={handleSearch} variant="contained" sx={{ mt: 2 }}>Search</Button>
-  
+        <Button onClick={handleSearch} variant="contained" sx={{ mt: 2 }} >
+          Search
+        </Button>
+
         {searchResults.length > 0 && (
           <div style={{ maxHeight: '200px', overflowY: 'auto', marginTop: '10px' }}>
             {searchResults.map((result) => (
@@ -174,9 +375,8 @@ function RequestHelp() {
             ))}
           </div>
         )}
-  
-        {/* Use position as a key to force re-render when it changes */}
-        <MapContainer key={position ? position.join(',') : 'loading'} center={position} zoom={13} style={{ height: '400px', width: '100%', marginTop: '20px' }}>
+
+        <MapContainer key={position.join(',')} center={position} zoom={13} style={{ height: '400px', width: '100%', marginTop: '20px' }}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -184,31 +384,59 @@ function RequestHelp() {
           <Marker position={position} />
           <MapClick />
         </MapContainer>
-  
-        <div>
-          <h3>Selected Location:</h3>
-          <p>Latitude: {position[0]}</p>
-          <p>Longitude: {position[1]}</p>
-        </div>
+
+        <br />
+        <Button 
+        sx={{
+          textTransform:"capitalize"
+        }}
+          onClick={handleNext}
+          fullWidth
+          variant='contained'
+        >
+          {isFetchCategoryLoading ? <CircularProgress color='inherit' size={24} /> : 'Next: Preview & Publish'}
+        </Button>
+
+        <Button  onClick={() => {
+          setActiveScreen(0)
+        }} fullWidth>
+          Back
+        </Button>
+
+        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </div>
     );
   };
-  
 
   return (
-    <div>
+    <div style={{
+      background: 'rgb(238,174,202)',
+      background: 'radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)',
+      width: '100%',
+      minHeight: "100vh",
+
+
+    }}>
       <div className='flex flex-col w-full gap-10 p-12'>
-        <h1 className='text-4xl font-medium'>Request for Help</h1>
+        <h1 className='text-white text-4xl mx-10 font-medium'>Request for Help</h1>
 
-        <Stepper activeStep={activeScreen} alternativeLabel>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
 
-        {activeScreen === 0 ? <WriteDescription /> : <SelectLocation />}
+        <div className='bg-white p-2 py-6 mx-9 rounded-lg'>
+          <Stepper sx={{
+            color: "white"
+          }} activeStep={activeScreen} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </div>
+        {activeScreen === 0 ? <WriteDescription /> : activeScreen == 1 ? <SelectLocation /> : <PreviewPublish />}
       </div>
     </div>
   );

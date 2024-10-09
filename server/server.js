@@ -18,7 +18,7 @@ app.use(express.json());
 // Connect to MongoDB
 
 dbConnection();
-app.use('/api/problems', router);
+app.use('/api/', router);
 
 
 // Start the server

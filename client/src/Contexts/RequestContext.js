@@ -6,10 +6,26 @@ const RequestContext = createContext();
 // Create a provider component
 export const RequestProvider = ({ children }) => {
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState([]);
+  const [categories,setCategories] = useState(['Category 1', 'Category 2', 'Category 3']); // Example categories
+  const [severity, setSeverity] = useState('Low'); // Default severity
+  const [urgency, setUrgency] = useState('Low'); // Default urgency
 
   return (
-    <RequestContext.Provider value={{ description, setDescription, location, setLocation }}>
+    <RequestContext.Provider 
+      value={{ 
+        description, 
+        setDescription, 
+        location, 
+        setLocation, 
+        categories, 
+        severity, 
+        setSeverity, 
+        urgency, 
+        setUrgency,
+        setCategories
+      }}
+    >
       {children}
     </RequestContext.Provider>
   );
