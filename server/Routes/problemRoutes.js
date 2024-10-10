@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 dotenv.config();
 
@@ -39,15 +39,19 @@ router.post("/gemini-model", async (req, res) => {
     console.log("Raw classification result:", classificationResult); // Log the raw response
 
     // Sanitize the response by removing markdown syntax
-    const sanitizedResult = classificationResult.replace(/```json|```/g, '').trim();
-    
+    const sanitizedResult = classificationResult
+      .replace(/```json|```/g, "")
+      .trim();
+
     // Attempt to parse the sanitized classification result
     let classification;
     try {
       classification = JSON.parse(sanitizedResult);
     } catch (parseError) {
       console.error("Error parsing JSON:", parseError);
-      return res.status(400).json({ error: "Invalid response format from AI model." });
+      return res
+        .status(400)
+        .json({ error: "Invalid response format from AI model." });
     }
 
     return res.status(200).json({
@@ -57,12 +61,13 @@ router.post("/gemini-model", async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating classification:", error);
-    return res.status(500).json({ error: "An error occurred while classifying the problem statement." });
+    return res.status(500).json({
+      error: "An error occurred while classifying the problem statement.",
+    });
   }
 });
 
-router.post("/publish-post",async (req,res)=>{
+router.post("/publish-post", async (req, res) => {
   console.log(req.body);
-  
-})
+});
 module.exports = router;
