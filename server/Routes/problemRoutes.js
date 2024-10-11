@@ -13,6 +13,9 @@ router.post("/gemini-model", async (req, res) => {
   const prompt = `
   This is the problem: ${problem}
 
+    If problem is not related to consequences of natural calamities/disaster, say irrelevant problem
+
+
   Please classify the problem and provide keywords for the following criteria:
 
   **Category:** Identify the main category of the problem. You may include any relevant keywords that describe the issue.
@@ -32,6 +35,7 @@ router.post("/gemini-model", async (req, res) => {
     "urgency": "High",
     "severity": "Medium"
   }
+
   `;
 
   try {
