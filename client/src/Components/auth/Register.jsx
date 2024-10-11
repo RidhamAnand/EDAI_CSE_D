@@ -59,7 +59,7 @@ const Register = () => {
     >
       <div className="w-1/2 flex flex-col justify-center items-center ">
         <div className="w-[75%] h-[95%] bg-slate-200 rounded-3xl p-28 shadow-2xl ">
-          <div className="text-blue-900 text-3xl mb-8 font-bold">
+          <div className="text-blue-900 text-3xl mb-4 font-bold">
             Sign-Up As {role === "victim" ? "Victim" : "Volunteer"}
           </div>
           <Box

@@ -225,6 +225,7 @@ style={{
            className="w-full h-[200px] object-cover"
          />
        </div>
+
      </div>
      
      <div className='buttons-area flex flex-row justify-between'>
@@ -235,6 +236,50 @@ style={{
        </div>
        <IconButton sx={{padding:0}}>   <TurnedInNotIcon/> </IconButton> 
      </div>
+
+
+     <div className='flex flex-row justify-between'>
+
+  <div>
+  <h1 className='font-medium'>
+    Category
+  </h1>
+  <p>
+    Flood, Medical, Infrastructure
+  </p>
+  </div>
+
+  <div className='flex flex-row gap-5 '>
+  <div className='text-right'>
+  <h1 className='font-medium'>
+    Severity
+  </h1>
+  <p>
+   High
+  </p>
+  </div>
+
+  <div className='text-right'>
+  <h1 className='font-medium'>
+    Urgency
+  </h1>
+  <p>
+   High
+  </p>
+  </div>
+
+  </div>
+  </div>
+
+  <div className='flex flex-row justify-between'>
+    <h1 className='font-medium'>
+      Distance: 3.5 Km
+    </h1>
+    <h1 className='font-medium'>
+      Location: Khadakwasla
+    </h1>
+  </div>
+
      <Button 
 variant="outlined" 
 size="small" 
@@ -254,24 +299,10 @@ sx={{
 }}
 >
 Volunteer
-</Button>  
-{/* <Button 
-variant="text" 
-size="small" 
-fullWidth
-sx={{
- fontFamily: 'Montserrat',
- fontWeight: '500',
- color: '#333',
- textTransform:'none',
- '&:hover': {
-   backgroundColor: '#f7f7f7', // Light hover effect
-   borderColor: '#bbb',
- },
-}}
->
-I know someone Who can Help
-</Button> */}
+</Button> 
+
+
+  
 
  </div>
  ))}
@@ -311,20 +342,20 @@ I know someone Who can Help
 
 {/* Chat Messages Area */}
 
-<div className="chat-messages flex-grow overflow-y-auto  border-b border-gray-300">
-{/* Chatbot Message */}
-<div className="message mb-2 flex">
- <div className="bg-gray-200 text-gray-800 rounded-lg p-2 max-w-xs">
-   <p className="font-montserrat text-xs">Hello! How can I assist you today?</p>
- </div>
-</div>
-
 {/* User Message */}
 <div className="message mb-2 flex justify-end">
  <div style={{
    backgroundColor: '#96BAE8'
  }} className=" text-white rounded-lg p-2 max-w-xs">
-   <p className="font-montserrat text-xs">I wanted to ask something.</p>
+   <p className="font-montserrat text-xs">Hello. I saw your recent post regarding medical emergency. What kind of medical supplies do you need exactly?</p>
+ </div>
+
+</div>
+<div className="chat-messages flex-grow overflow-y-auto  border-b border-gray-300">
+{/* Chatbot Message */}
+<div className="message mb-2 flex">
+ <div className="bg-gray-200 text-gray-800 rounded-lg p-2 max-w-xs">
+   <p className="font-montserrat text-xs">I need supplies for a third degree burn injury. My medical supplies are exhausting soon.</p>
  </div>
 </div>
 

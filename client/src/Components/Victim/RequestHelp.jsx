@@ -29,14 +29,14 @@ function RequestHelp() {
 
   const [loginEmail, setLoginEmail ]= useState();
 
-  useEffect(()=>{
+  // useEffect(()=>{
 
-    if(localStorage.getItem("victimLoginEmail")){
-      setLoginEmail(localStorage.getItem('victimLoginEmail'))
-    }else{
-      window.location.replace("http://localhost:3000/victimLogin")
-    }
-  },[])
+  //   if(localStorage.getItem("victimLoginEmail")){
+  //     setLoginEmail(localStorage.getItem('victimLoginEmail'))
+  //   }else{
+  //     window.location.replace("http://localhost:3000/victimLogin")
+  //   }
+  // },[])
 
   const minLength = 5; // Minimum length requirement
   const keywords = [

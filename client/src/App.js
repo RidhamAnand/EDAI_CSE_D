@@ -16,6 +16,7 @@ function App() {
         <Route element={<Register />} path="/register" />
         <Route element={<VictimRegister/> } path = "/victimRegister"/>
         <Route element={<VictimLogin />} path="/victimLogin" />
+        <Route element={<VolunteerScreen />} path="/volunteer" />
 
         <Route
           element={
