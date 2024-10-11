@@ -1,9 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dbConnection = require('./Database/dbConnection');
-const router = require('./Routes/problemRoutes');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dbConnection = require("./Database/dbConnection");
+const router = require("./Routes/problemRoutes");
+const authRouter = require("./Routes/authRouter");
 // const problemRoutes = require('./routes/problemRoutes');
 
 const app = express();
@@ -18,12 +19,11 @@ app.use(express.json());
 // Connect to MongoDB
 
 dbConnection();
-app.use('/api/', router);
-
+app.use("/api/", router);
+app.use("/api/auth", authRouter);
 
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
