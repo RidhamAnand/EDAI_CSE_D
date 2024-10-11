@@ -5,6 +5,8 @@ import RequestHelp from "./Components/Victim/RequestHelp";
 import { RequestProvider } from "./Contexts/RequestContext";
 import Login from "./Components/auth/Login";
 import Register from "./Components/auth/Register";
+import VictimRegister from "./Components/Victim/VictimRegister";
+import VictimLogin from "./Components/Victim/VictimLogin";
 
 function App() {
   return (
@@ -12,7 +14,9 @@ function App() {
       <Routes>
         <Route element={<Login />} path="/login" />
         <Route element={<Register />} path="/register" />
-        <Route element={<VolunteerScreen />} path="/volunteer" />
+        <Route element={<VictimRegister/> } path = "/victimRegister"/>
+        <Route element={<VictimLogin />} path="/victimLogin" />
+
         <Route
           element={
             <RequestProvider>

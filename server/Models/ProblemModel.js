@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const problemSchema = new mongoose.Schema({
   description: { type: String, required: true },
-  category: { type: String, required: true },
+  category: [{ type: String, required: true }],
   severity: { type: String, required: true },
-  priority: { type: Number, required: true },
+  priority: { type: String, required: true },
   status: { type: String, default: 'open' },
   geoLocation: {
     type: { type: String, default: 'Point' },

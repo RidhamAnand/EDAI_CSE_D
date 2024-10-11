@@ -26,6 +26,18 @@ const steps = [
 ];
 
 function RequestHelp() {
+
+  const [loginEmail, setLoginEmail ]= useState();
+
+  useEffect(()=>{
+
+    if(localStorage.getItem("victimLoginEmail")){
+      setLoginEmail(localStorage.getItem('victimLoginEmail'))
+    }else{
+      window.location.replace("http://localhost:3000/victimLogin")
+    }
+  },[])
+
   const minLength = 5; // Minimum length requirement
   const keywords = [
     "urgent medical needs",
@@ -114,6 +126,7 @@ function RequestHelp() {
     };
 
     const publishPost =  async ()=>{
+      
       try{
         const reponse = await axios.post(url + "publish-post",{
             problemStatement:description,
