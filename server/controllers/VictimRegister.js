@@ -3,7 +3,8 @@ const VictimModel = require('../Models/VictimModel');
 // Register controller
 const registerVictim = async (req, res) => {
     try {
-        const { name, email, password, phone, location } = req.body;
+        const { name, email, password, phone } = req.body;
+        console.log(req.body)
 
         if (!name || !email || !password || !phone) {
             return res.status(400).json({ error: 'Name, email, password, and phone are required' });
@@ -19,7 +20,7 @@ const registerVictim = async (req, res) => {
             email,
             password, 
             phone,
-            location
+            
         });
 
         await newVictim.save();

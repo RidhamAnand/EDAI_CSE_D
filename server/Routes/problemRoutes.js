@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require("dotenv");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const ProblemModel = require("../Models/ProblemModel");
 dotenv.config();
 
 router.post("/gemini-model", async (req, res) => {
@@ -72,6 +73,21 @@ router.post("/gemini-model", async (req, res) => {
 });
 
 router.post("/publish-post", async (req, res) => {
-  console.log(req.body);
+
+  const { problemStatement,problemUrgency,problemCategory,problemSeverity,problemLocation} = req.body;
+  console.log(problemUrgency)
+
+  const problem = new ProblemModel({
+    description : problemStatement,
+    category : problemCategory,
+    severity : problemSeverity,
+    priority : problemUrgency,
+    status: 'open',
+    geoLocation: problemLocation,
+  })
+
+  await problem.save();
+  res.status(200).json({msg:"saved"})
+
 });
 module.exports = router;
