@@ -1,4 +1,5 @@
 const VolunteerModel = require("../Models/VolunteerModel");
+const { genrateAndSetCookie } = require("../utils/cookie");
 
 // Login controller
 const loginVolunteer = async (req, res) => {

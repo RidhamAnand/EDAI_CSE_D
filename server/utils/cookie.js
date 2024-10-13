@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
-export const genrateAndSetCookie = (userId, res) => {
+const genrateAndSetCookie = (userId, res) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "15d",
   });
@@ -12,3 +12,5 @@ export const genrateAndSetCookie = (userId, res) => {
     secure: process.env.NODE_ENV !== "development",
   });
 };
+
+module.exports = { genrateAndSetCookie };

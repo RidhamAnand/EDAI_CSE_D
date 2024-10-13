@@ -1,4 +1,5 @@
 const VictimModel = require("../Models/VictimModel");
+const { genrateAndSetCookie } = require("../utils/cookie");
 
 // Register controller
 const registerVictim = async (req, res) => {
