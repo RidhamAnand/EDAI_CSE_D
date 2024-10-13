@@ -5,6 +5,7 @@ const cors = require("cors");
 const dbConnection = require("./Database/dbConnection");
 const router = require("./Routes/problemRoutes");
 const authRouter = require("./Routes/authRouter");
+const cookieParser = require("cookie-parser");
 // const problemRoutes = require('./routes/problemRoutes');
 
 const app = express();
@@ -12,6 +13,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 // app.use('/api/problems', problemRoutes);

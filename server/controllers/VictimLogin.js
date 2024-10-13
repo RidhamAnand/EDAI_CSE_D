@@ -23,7 +23,6 @@ const loginVictim = async (req, res) => {
     }
 
     genrateAndSetCookie(victim._id, res);
-
     // Respond with success message and victim info
     res.status(200).json({
       message: "Login successful",
@@ -44,6 +43,7 @@ const loginVictim = async (req, res) => {
 const meVictim = async (req, res) => {
   try {
     const victim = await VictimModel.findById(req.userId);
+
     res.send(victim);
   } catch (error) {
     console.error(error);

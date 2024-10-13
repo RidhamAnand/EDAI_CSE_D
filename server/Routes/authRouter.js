@@ -1,6 +1,7 @@
 const { logout } = require("../controllers/Logout");
 const { loginVictim, meVictim } = require("../controllers/VictimLogin");
 const { registerVictim } = require("../controllers/VictimRegister");
+const authMiddleware = require("../middleware/middleware");
 
 const router = require("express").Router();
 
@@ -13,7 +14,7 @@ router.post("/login-victim", loginVictim);
 router.post("/register-victim", registerVictim);
 
 //MeVictim
-router.get("/me-victim", meVictim);
+router.get("/me-victim", authMiddleware, meVictim);
 
 // volunteerRoutes
 const {
