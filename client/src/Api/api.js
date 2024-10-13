@@ -8,46 +8,51 @@ async function handleResponse(response) {
   return data;
 }
 
-export async function loginVictim(credentials) {
-  const response = await fetch(`${API_URL}/login-victim`, {
-    method: "POST",
+async function fetchWithCredentials(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    credentials: "include",
     headers: {
+      ...options.headers,
       "Content-Type": "application/json",
     },
+  });
+}
+
+export async function loginVictim(credentials) {
+  const response = await fetchWithCredentials(`${API_URL}/login-victim`, {
+    method: "POST",
     body: JSON.stringify(credentials),
   });
   return handleResponse(response);
 }
 
 export async function registerVictim(credentials) {
-  const response = await fetch(`${API_URL}/register-victim`, {
+  const response = await fetchWithCredentials(`${API_URL}/register-victim`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(credentials),
   });
   return handleResponse(response);
 }
 
 export async function loginVolunteer(credentials) {
-  const response = await fetch(`${API_URL}/login-volunteer`, {
+  const response = await fetchWithCredentials(`${API_URL}/login-volunteer`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(credentials),
   });
   return handleResponse(response);
 }
 
 export async function registerVolunteer(credentials) {
-  const response = await fetch(`${API_URL}/register-volunteer`, {
+  const response = await fetchWithCredentials(`${API_URL}/register-volunteer`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(credentials),
   });
+  return handleResponse(response);
+}
+
+// Add a new function to check authentication status
+export async function checkAuthStatus() {
+  const response = await fetchWithCredentials(`${API_URL}/me`);
   return handleResponse(response);
 }

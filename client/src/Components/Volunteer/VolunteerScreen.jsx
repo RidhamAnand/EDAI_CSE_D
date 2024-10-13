@@ -10,7 +10,38 @@ import ShareIcon from "@mui/icons-material/Share";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import AddCommentIcon from "@mui/icons-material/AddComment";
 import PhoneEnabledIcon from "@mui/icons-material/PhoneEnabled";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 const VolunteerScreen = () => {
+  const queryClient = useQueryClient();
+  const { mutate: logout } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        return data;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      console.log("logout");
+
+      queryClient.invalidateQueries({ queryKey: ["volunteerUser"] });
+    },
+  });
+
+  const { data: volunteerUser } = useQuery({ queryKey: ["volunteerUser"] });
+
   return (
     <div
       style={{
@@ -39,9 +70,11 @@ const VolunteerScreen = () => {
           >
             <div className="profile-component flex flex-col justify-center items-center gap-2 basis-1/2 rounded-md">
               <Avatar />
-              <p className="font-semibold font-montserrat ">Ridham Anand</p>
+              <p className="font-semibold font-montserrat ">
+                {volunteerUser?.name.split(" ")[0]}
+              </p>
               <p className="font-light text-sm font-montserrat">
-                ridhamanand31@gmail.com
+                {volunteerUser?.email}
               </p>
             </div>
 
@@ -90,6 +123,10 @@ const VolunteerScreen = () => {
               fullWidth
               size="small"
               variant="outlined"
+              onClick={(e) => {
+                e.preventDefault();
+                logout();
+              }}
               sx={{
                 textAlign: "left",
                 borderTop: "1px solid",

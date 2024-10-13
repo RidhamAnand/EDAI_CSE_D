@@ -45,7 +45,9 @@ const loginVolunteer = async (req, res) => {
 
 const meVolunteer = async (req, res) => {
   try {
-    const volunteer = await VolunteerModel.findById(req.userId);
+    const volunteer = await VolunteerModel.findById(req.userId)
+      .select("-password")
+      .select("+volunteer");
     res.send(volunteer);
   } catch (error) {
     console.error(error);

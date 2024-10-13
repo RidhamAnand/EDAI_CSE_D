@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Button, TextField, Typography, Box } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { loginVictim, loginVolunteer } from "../../Api/api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const queryClient = useQueryClient();
   let role = searchParams.get("role");
   if (!role || (role !== "volunteer" && role !== "victim")) role = "volunteer";
 
@@ -18,11 +18,14 @@ const Login = () => {
   const { mutate, isLoading, error } = useMutation({
     mutationFn,
     onSuccess: (data) => {
-      // console.log("Success: ", data);
       {
         role === "volunteer"
-          ? navigate("/volunteer")
-          : navigate("/victim-help");
+          ? navigate("/volunteer") &&
+            queryClient.invalidateQueries({ queryKey: ["volunteerUser"] })
+          : navigate("/victim-help") &&
+            queryClient.invalidateQueries({
+              queryKey: ["victimUser"],
+            });
       }
     },
     onError: (error) => {

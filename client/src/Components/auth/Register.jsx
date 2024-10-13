@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Button, TextField, Typography, Box } from "@mui/material";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { registerVictim, registerVolunteer } from "../../Api/api"; // Adjust the import path as necessary
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,8 +26,12 @@ const Register = () => {
       console.log("Registration successful:", data);
       {
         role === "volunteer"
-          ? navigate("/volunteer")
-          : navigate("/victim-help");
+          ? navigate("/volunteer") &&
+            queryClient.invalidateQueries({ queryKey: ["volunteerUser"] })
+          : navigate("/victim-help") &&
+            queryClient.invalidateQueries({
+              queryKey: ["victimUser"],
+            });
       }
     },
     onError: (error) => {

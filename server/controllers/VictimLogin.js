@@ -42,7 +42,9 @@ const loginVictim = async (req, res) => {
 
 const meVictim = async (req, res) => {
   try {
-    const victim = await VictimModel.findById(req.userId);
+    const victim = await VictimModel.findById(req.userId)
+      .select("-password")
+      .select("+victim");
 
     res.send(victim);
   } catch (error) {
