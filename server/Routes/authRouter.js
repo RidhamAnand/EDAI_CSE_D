@@ -30,7 +30,7 @@ router.post("/login-volunteer", loginVolunteer);
 router.post("/register-volunteer", registerVolunteer);
 
 //MeVolunteer
-router.get("/me-volunteer", meVolunteer);
+router.get("/me-volunteer", authMiddleware, meVolunteer);
 
 //logout
 router.post("/logout", logout);
