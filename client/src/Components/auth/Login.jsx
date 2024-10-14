@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, TextField, Typography, Box } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { loginVictim, loginVolunteer } from "../../Api/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -15,17 +15,15 @@ const Login = () => {
 
   const mutationFn = role === "volunteer" ? loginVolunteer : loginVictim;
 
-  const { mutate, isLoading, error } = useMutation({
+  const { mutate, isPending, error } = useMutation({
     mutationFn,
     onSuccess: (data) => {
-      {
-        role === "volunteer"
-          ? navigate("/volunteer") &&
-            queryClient.invalidateQueries({ queryKey: ["volunteerUser"] })
-          : navigate("/victim-help") &&
-            queryClient.invalidateQueries({
-              queryKey: ["victimUser"],
-            });
+      if (role === "volunteer") {
+        queryClient.invalidateQueries({ queryKey: ["volunteerUser"] });
+        navigate("/volunteer");
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["victimUser"] });
+        navigate("/victim-help");
       }
     },
     onError: (error) => {
@@ -96,10 +94,17 @@ const Login = () => {
               variant="contained"
               color="primary"
               sx={{ mt: 2 }}
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? "Submitting..." : "Submit"}
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
+            <Link
+              to={role == "volunteer" ? "/register" : "/register?role=victim"}
+            >
+              <p className="text-gray-700 hover:underline hover:text-black text-center">
+                Create a new Account? Register Now
+              </p>
+            </Link>
           </Box>
         </div>
       </div>

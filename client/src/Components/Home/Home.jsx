@@ -35,12 +35,12 @@ const Home = () => {
       </div>
 
       {/* Description */}
-      <div className="flex flex-col justify-center items-center text-center w-1/2">
+      {/* <div className="flex flex-col justify-center items-center text-center w-1/2">
         <p className="text-xl text-white mx-4">
           Whether you want to make a difference as a volunteer or need
           assistance, we're here to help you. Choose your path below!
         </p>
-      </div>
+      </div> */}
 
       {/* Right Box: Get Help */}
       <div className="w-1/2 flex flex-col justify-center items-center">

@@ -1,12 +1,16 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import "./App.css";
 import VolunteerScreen from "./Components/Volunteer/VolunteerScreen";
 import RequestHelp from "./Components/Victim/RequestHelp";
 import { RequestProvider } from "./Contexts/RequestContext";
 import Login from "./Components/auth/Login";
 import Register from "./Components/auth/Register";
-import VictimRegister from "./Components/Victim/VictimRegister";
-import VictimLogin from "./Components/Victim/VictimLogin";
 import { useQuery } from "@tanstack/react-query";
 import Home from "./Components/Home/Home";
 
@@ -17,6 +21,9 @@ const Victimhelp = () => (
 );
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { data: victimUser } = useQuery({
     queryKey: ["victimUser"],
     queryFn: async () => {
@@ -58,44 +65,40 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route
-          element={!victimUser ? <Login /> : <Navigate to="/victim-help" />}
           path="/login"
+          element={
+            !victimUser && !volunteerUser ? (
+              <Login />
+            ) : victimUser ? (
+              <Navigate to="/victim-help" />
+            ) : (
+              <Navigate to="/volunteer" />
+            )
+          }
         />
         <Route
-          element={!victimUser ? <Register /> : <Navigate to="/victim-help" />}
           path="/register"
+          element={
+            !victimUser && !volunteerUser ? (
+              <Register />
+            ) : victimUser ? (
+              <Navigate to="/victim-help" />
+            ) : (
+              <Navigate to="/volunteer" />
+            )
+          }
         />
-
         <Route
-          element={!volunteerUser ? <Login /> : <Navigate to="/volunteer" />}
-          path="/volunteer-login"
-        />
-        <Route
-          element={!volunteerUser ? <Register /> : <Navigate to="/volunteer" />}
-          path="/volunteer-register"
-        />
-
-        <Route
+          path="/volunteer"
           element={
             volunteerUser ? <VolunteerScreen /> : <Navigate to="/login" />
           }
-          path="/volunteer"
         />
-
         <Route
-          element={
-            !victimUser && volunteerUser ? (
-              <Navigate to="/volunteer" />
-            ) : (
-              <Navigate to="/victim-help" />
-            )
-          }
-          path="/volunteer"
-        />
-
-        <Route
-          element={victimUser ? <Victimhelp /> : <Navigate to="/login" />}
           path="/victim-help"
+          element={
+            victimUser ? <Victimhelp /> : <Navigate to="/login?role=victim" />
+          }
         />
       </Routes>
     </div>
