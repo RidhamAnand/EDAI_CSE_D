@@ -23,8 +23,9 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import url from "../../apiConfig";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { Keywords } from "../Constants/Constants";
 
 // Set default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -44,6 +45,9 @@ function RequestHelp() {
   const navigate = useNavigate();
   const [loginEmail, setLoginEmail] = useState();
   const queryClient = useQueryClient();
+  const { data: victimUser } = useQuery({ queryKey: ["victimUser"] });
+  console.log(victimUser.name);
+
   const {
     mutate: logout,
     isPending,
@@ -72,36 +76,10 @@ function RequestHelp() {
       queryClient.invalidateQueries({ queryKey: ["victimUser"] });
     },
   });
-  // useEffect(()=>{
-
-  //   if(localStorage.getItem("victimLoginEmail")){
-  //     setLoginEmail(localStorage.getItem('victimLoginEmail'))
-  //   }else{
-  //     window.location.replace("http://localhost:3000/victimLogin")
-  //   }
-  // },[])
 
   const minLength = 5; // Minimum length requirement
-  const keywords = [
-    "urgent medical needs",
-    "food donations",
-    "shelter request",
-    "clothing for children",
-    "transport to hospital",
-    "psychological counseling",
-    "medical supplies needed",
-    "temporary housing assistance",
-    "clean drinking water",
-    "first aid kits",
-    "baby supplies needed",
-    "warm clothing",
-    "emergency shelter",
-    "fuel assistance",
-    "volunteer support",
-    "financial aid request",
-    "housing relocation help",
-    "counseling for trauma",
-  ];
+
+  const keywords = Keywords;
 
   const [activeScreen, setActiveScreen] = useState(0); // Start with description screen
   const [loading, setLoading] = useState(false); // Loading state
@@ -185,6 +163,7 @@ function RequestHelp() {
           problemCategory: categories,
           problemSeverity: severity,
           problemLocation: location,
+          author: victimUser.name,
         });
       } catch (e) {
         console.log(e);

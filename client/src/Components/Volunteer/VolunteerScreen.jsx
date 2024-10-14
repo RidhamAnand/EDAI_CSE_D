@@ -11,195 +11,75 @@ import {
   Input,
   Modal,
 } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import CallMissedOutgoingIcon from "@mui/icons-material/CallMissedOutgoing";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShareIcon from "@mui/icons-material/Share";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import AddCommentIcon from "@mui/icons-material/AddComment";
-import PhoneEnabledIcon from "@mui/icons-material/PhoneEnabled";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Categories, Posts } from "../Constants/Constants";
+import { useEffect } from "react";
+// import geolib from "geolib";
+import LeaderBoard from "./Components/LeaderBoard";
+import Chat from "./Components/Chat";
+import { haversineDistance } from "../../utils/calculateDistance";
 
 const VolunteerScreen = () => {
-  const categories = [
-    "Food",
-    "Medical Supplies",
-    "Shelter",
-    "Clothing",
-    "Clean Water",
-    "Sanitation Supplies",
-    "Communication Devices",
-    "Other",
-    "First Aid Kits",
-    "Cooking Equipment",
-    "Hygiene Products",
-    "Blankets",
-    "Flashlights",
-    "Batteries",
-    "Tents",
-    "Child Care Supplies",
-    "Pet Care Supplies",
-    "Fuel",
-    "Transportation Assistance",
-    "Psychological Support Resources",
-  ];
+  // const posts = Posts;
+  const categories = Categories;
+  const [userLocation, setUserLocation] = useState(null);
+  const [position, setPosition] = useState(null);
 
-  const posts = [
-    {
-      id: 1,
-      author: "Arnav Anand",
-      date: "7th Oct | 14:00",
-      status: "OPEN",
-      description:
-        "Our area has been severely flooded, and many of us are stranded. We urgently need clean drinking water, food supplies, and medical assistance.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Flood, Medical, Infrastructure",
-      severity: "High",
-      urgency: "High",
-      distance: "3.5 Km",
-      location: "Khadakwasla",
-    },
-    {
-      id: 2,
-      author: "John Doe",
-      date: "8th Oct | 15:30",
-      status: "CLOSED",
-      description:
-        "We are looking for volunteers to assist with shelter for displaced families after the recent earthquake.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Shelter, Medical",
-      severity: "Medium",
-      urgency: "Medium",
-      distance: "1.2 Km",
-      location: "Downtown",
-    },
-    {
-      id: 3,
-      author: "Jane Smith",
-      date: "9th Oct | 10:00",
-      status: "OPEN",
-      description:
-        "Urgent need for food and blankets in the affected area after the landslide.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Food, Shelter",
-      severity: "High",
-      urgency: "High",
-      distance: "5.0 Km",
-      location: "Highland",
-    },
-    {
-      id: 4,
-      author: "Mike Johnson",
-      date: "10th Oct | 12:30",
-      status: "OPEN",
-      description:
-        "Medical assistance required for injured individuals following the fire outbreak.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Medical, Fire",
-      severity: "Critical",
-      urgency: "Immediate",
-      distance: "2.8 Km",
-      location: "City Center",
-    },
-    {
-      id: 5,
-      author: "Emily Brown",
-      date: "11th Oct | 09:15",
-      status: "CLOSED",
-      description:
-        "Community needs support in rebuilding homes damaged by the storm.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Reconstruction, Shelter",
-      severity: "Medium",
-      urgency: "Low",
-      distance: "4.5 Km",
-      location: "West Side",
-    },
-    {
-      id: 6,
-      author: "Rachel Green",
-      date: "12th Oct | 11:45",
-      status: "OPEN",
-      description:
-        "Collecting donations for victims of the recent earthquake. Every bit helps!",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Donations, Food",
-      severity: "Medium",
-      urgency: "High",
-      distance: "1.0 Km",
-      location: "East Valley",
-    },
-    {
-      id: 7,
-      author: "Chris Evans",
-      date: "13th Oct | 08:30",
-      status: "OPEN",
-      description:
-        "Seeking volunteers to distribute food and water in the flood-hit areas.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Food, Volunteers",
-      severity: "High",
-      urgency: "Immediate",
-      distance: "6.3 Km",
-      location: "Riverbank",
-    },
-    {
-      id: 8,
-      author: "Sophia Turner",
-      date: "14th Oct | 16:00",
-      status: "OPEN",
-      description:
-        "Need urgent medical supplies for a health camp in the disaster zone.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Medical, Supplies",
-      severity: "Critical",
-      urgency: "High",
-      distance: "2.0 Km",
-      location: "North Hill",
-    },
-    {
-      id: 9,
-      author: "David Williams",
-      date: "15th Oct | 13:00",
-      status: "CLOSED",
-      description:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      image: "https://example.com/image9.jpg",
-      category: "Reconstruction",
-      severity: "Low",
-      urgency: "Low",
-      distance: "4.0 Km",
-      location: "Old Town",
-    },
-    {
-      id: 10,
-      author: "Olivia Martinez",
-      date: "16th Oct | 14:30",
-      status: "OPEN",
-      description:
-        "Looking for support in providing clean water to families affected by the drought.",
-      image:
-        "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y",
-      category: "Water, Supplies",
-      severity: "High",
-      urgency: "High",
-      distance: "3.0 Km",
-      location: "Sunnydale",
-    },
-  ];
+  // Function to get user's location
+  // Function to get user's location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const newPosition = [pos.coords.latitude, pos.coords.longitude];
+          setPosition(newPosition);
+          setUserLocation(newPosition); // Set userLocation to position
+        },
+        () => {
+          setPosition([51.505, -0.09]); // Default location
+          setUserLocation([51.505, -0.09]); // Set userLocation to default
+        }
+      );
+    } else {
+      setPosition([18.516808780071855, 73.86420913244177]); // Default location
+      setUserLocation([18.516808780071855, 73.86420913244177]); // Set userLocation to default
+    }
+  }, []);
 
+  const calculateDistance = (geoLocation) => {
+    if (position) {
+      return haversineDistance(position, geoLocation).toFixed(2); // Distance in kilometers
+    }
+    return null;
+  };
+
+  const defaultImage =
+    "https://image.cnbcfm.com/api/v1/image/107077924-1655579857423-gettyimages-1241322120-INDIA-ASSAM-GUWAHATI-FLOOD.jpeg?v=1655580320&w=1480&h=833&ffmt=webp&vtcrop=y";
   const queryClient = useQueryClient();
+
+  const { data: posts } = useQuery({
+    queryKey: ["posts"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/get-posts", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data.error) return null;
+        if (!res.ok) throw new Error(data.error || "something went wrong");
+        return data;
+      } catch (error) {
+        throw new Error("Failed to fetch posts");
+      }
+    },
+  });
+  console.log(posts);
+
   const { mutate: logout } = useMutation({
     mutationFn: async () => {
       try {
@@ -346,45 +226,7 @@ const VolunteerScreen = () => {
             }}
           >
             {/* Leaderboard Title */}
-            <div className="flex justify-between gap-2  border-gray-300">
-              <h2 className="text-lg font-bold text-wh mb-4">Leaderboard</h2>
-              <LeaderboardIcon />
-            </div>
-
-            {/* Table Container with Bottom Border */}
-            <div className="border-t border-gray-300">
-              <table className="table-auto w-full border-separate border-spacing-y-2">
-                <thead>
-                  <tr className="border-b border-gray-400">
-                    <th className="font-bold p-2 text-left">Rank</th>
-                    <th className="font-bold p-2 text-left">Name</th>
-                    <th className="font-bold p-2 text-left">Volunteered</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2">1</td>
-                    <td className="p-2">Ridham</td>
-                    <td className="p-2">5</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2">2</td>
-                    <td className="p-2">Shivani</td>
-                    <td className="p-2">8</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2">3</td>
-                    <td className="p-2">Vansh</td>
-                    <td className="p-2">7</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2">4</td>
-                    <td className="p-2">Vinit</td>
-                    <td className="p-2">4</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <LeaderBoard />
           </div>
         </div>
         {/* middle component */}
@@ -528,193 +370,149 @@ const VolunteerScreen = () => {
           {/* Scrollable Posts Component */}
           <div className="posts-area flex-grow p-3 basis-full flex-col rounded-md overflow-y-scroll space-y-5 scrollbar-hide">
             {/* Post Component */}
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                style={{
-                  background: "rgba(255, 255, 255, 0.8)",
-                  backdropFilter: "blur(8px)",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-                }}
-                className="bg-white p-7 flex flex-col gap-4 rounded-md border border-gray-300"
-              >
-                <div className="flex justify-between gap-2">
-                  <div className="flex gap-2">
-                    <Avatar sx={{ width: 30, height: 30, fontSize: 15 }}>
-                      A
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <p className="font-poppins font-medium text-xs">
-                        {post.author}
-                      </p>
-                      <p className="font-montserrat text-xs">{post.date}</p>
-                    </div>
-                  </div>
+            {posts &&
+              posts.map((post) => {
+                const distance = calculateDistance(post.geoLocation);
+                console.log("Distance:", distance);
+
+                return (
                   <div
-                    className={`p-2 rounded-lg shadow-md ${
-                      post.status === "OPEN" ? "bg-green-500" : "bg-red-500"
-                    }`}
+                    key={post._id}
+                    style={{
+                      background: "rgba(255, 255, 255, 0.8)",
+                      backdropFilter: "blur(8px)",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+                    }}
+                    className="bg-white p-7 flex flex-col gap-4 rounded-md border border-gray-300"
                   >
-                    <p className="font-bold text-md">{post.status}</p>
-                  </div>
-                </div>
-
-                <hr className="border-t border-gray-300 mb-3 w-full" />
-
-                <div className="description">
-                  <p className="font-poppins text-xs">{post.description}</p>
-                  <div className="mt-3 w-full rounded-lg overflow-hidden">
-                    <img
-                      src={post.image}
-                      alt="Post Image"
-                      className="w-full h-[200px] object-cover"
-                    />
-                  </div>
-                </div>
-
-                <div className="buttons-area flex flex-row justify-between">
-                  <div className="flex gap-7 flex-row">
-                    <IconButton sx={{ padding: 0 }}>
-                      <FavoriteBorderIcon />
-                    </IconButton>
-                    <IconButton sx={{ padding: 0 }}>
-                      <AddCommentIcon />
-                    </IconButton>
-                    <IconButton sx={{ padding: 0 }}>
-                      <ShareIcon />
-                    </IconButton>
-                  </div>
-                  <IconButton sx={{ padding: 0 }}>
-                    <TurnedInNotIcon />
-                  </IconButton>
-                </div>
-
-                <div className="flex flex-row justify-between">
-                  <div>
-                    <h1 className="font-medium">Category</h1>
-                    <p>{post.category}</p>
-                  </div>
-
-                  <div className="flex flex-row gap-5">
-                    <div className="text-right">
-                      <h1 className="font-medium">Severity</h1>
-                      <p>{post.severity}</p>
+                    <div className="flex justify-between gap-2">
+                      <div className="flex gap-2">
+                        <Avatar sx={{ width: 30, height: 30, fontSize: 15 }}>
+                          {post.author ? post.author[0] : "U"}
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <p className="font-poppins font-medium text-xs">
+                            {post.author || "Unknown"}
+                          </p>
+                          <p className="font-montserrat text-xs">
+                            {new Date(post.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={`p-2 rounded-lg shadow-md ${
+                          post.status === "open" ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      >
+                        <p className="font-bold text-md">
+                          {post.status.toUpperCase()}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="text-right">
-                      <h1 className="font-medium">Urgency</h1>
-                      <p>{post.urgency}</p>
+                    <hr className="border-t border-gray-300 mb-3 w-full" />
+
+                    <div className="description">
+                      <p className="font-poppins text-xs">{post.description}</p>
+                      {post.image && (
+                        <div className="mt-3 w-full rounded-lg overflow-hidden">
+                          <img
+                            src={post.image || defaultImage}
+                            alt="Post Image"
+                            className="w-full h-[200px] object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="mt-3 w-full rounded-lg overflow-hidden">
+                        <img
+                          src={post.image || defaultImage}
+                          alt="Post Image"
+                          className="w-full h-[200px] object-cover"
+                        />
+                      </div>
                     </div>
+
+                    {/* ... (keep buttons as is) ... */}
+
+                    <div className="buttons-area flex flex-row justify-between">
+                      <div className="flex gap-7 flex-row">
+                        <IconButton sx={{ padding: 0 }}>
+                          <FavoriteBorderIcon />
+                        </IconButton>
+                        <IconButton sx={{ padding: 0 }}>
+                          <AddCommentIcon />
+                        </IconButton>
+                        <IconButton sx={{ padding: 0 }}>
+                          <ShareIcon />
+                        </IconButton>
+                      </div>
+                      <IconButton sx={{ padding: 0 }}>
+                        <TurnedInNotIcon />
+                      </IconButton>
+                    </div>
+
+                    <div className="flex flex-row justify-between">
+                      <div>
+                        <h1 className="font-medium">Category</h1>
+                        <p>{post.category.join(", ")}</p>
+                      </div>
+
+                      <div className="flex flex-row gap-5">
+                        <div className="text-right">
+                          <h1 className="font-medium">Severity</h1>
+                          <p>{post.severity}</p>
+                        </div>
+
+                        <div className="text-right">
+                          <h1 className="font-medium">Priority</h1>
+                          <p>{post.priority}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-row justify-between">
+                      <h1 className="font-medium">
+                        Distance:
+                        <p className="font-normal">{distance} km</p>
+                      </h1>
+                      <h1 className="font-medium">
+                        Location:
+                        <p className="font-normal">
+                          {post.geoLocation.join(", ")}
+                        </p>
+                      </h1>
+                    </div>
+
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{
+                        fontFamily: "Montserrat",
+                        fontWeight: "500",
+                        color: "#fff",
+                        backgroundColor: "#4452D9",
+                        borderColor: "#fff",
+                        borderWidth: "1px",
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#3b4cbb",
+                          borderColor: "#fff",
+                        },
+                      }}
+                    >
+                      Volunteer
+                    </Button>
                   </div>
-                </div>
-
-                <div className="flex flex-row justify-between">
-                  <h1 className="font-medium">Distance: {post.distance}</h1>
-                  <h1 className="font-medium">Location: {post.location}</h1>
-                </div>
-
-                <Button
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  sx={{
-                    fontFamily: "Montserrat",
-                    fontWeight: "500",
-                    color: "#fff",
-                    backgroundColor: "#4452D9",
-                    borderColor: "#fff",
-                    borderWidth: "1px",
-                    textTransform: "none",
-                    "&:hover": {
-                      backgroundColor: "#3b4cbb",
-                      borderColor: "#fff",
-                    },
-                  }}
-                >
-                  Volunteer
-                </Button>
-              </div>
-            ))}
+                );
+              })}
           </div>
         </div>
 
         {/* right component */}
-
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            borderRadius: "12px",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-          }}
-          className="chat-area border border-gray-300 bg-white basis-1/3 p-2 h-full flex flex-col rounded-md"
-        >
-          {/* Chat Side */}
-          <div className="flex flex-row mb- items-center justify-between">
-            <div className="flex justify-start  gap-2 ">
-              <Avatar sx={{ width: 24, height: 23, fontSize: 10 }}>C</Avatar>
-              <div className="flex flex-col justify-center">
-                <p className="font-poppins font-normal text-xs">Arnav Anand</p>
-              </div>
-            </div>
-            <IconButton sx={{ padding: 0 }}>
-              <PhoneEnabledIcon sx={{ width: 18, height: 18 }} />
-            </IconButton>
-          </div>
-
-          <hr className="border-t border-gray-300 mb-3 w-full" />
-
-          {/* Chat Messages Area */}
-
-          {/* User Message */}
-          <div className="message mb-2 flex justify-end">
-            <div
-              style={{
-                backgroundColor: "#96BAE8",
-              }}
-              className=" text-white rounded-lg p-2 max-w-xs"
-            >
-              <p className="font-montserrat text-xs">
-                Hello. I saw your recent post regarding medical emergency. What
-                kind of medical supplies do you need exactly?
-              </p>
-            </div>
-          </div>
-          <div className="chat-messages flex-grow overflow-y-auto  border-b border-gray-300">
-            {/* Chatbot Message */}
-            <div className="message mb-2 flex">
-              <div className="bg-gray-200 text-gray-800 rounded-lg p-2 max-w-xs">
-                <p className="font-montserrat text-xs">
-                  I need supplies for a third degree burn injury. My medical
-                  supplies are exhausting soon.
-                </p>
-              </div>
-            </div>
-
-            {/* Add more messages as needed */}
-          </div>
-
-          {/* Message Input Area */}
-          <div className="flex m-2 align-bottom gap-2 rounded-md border pt-1 pb-2 pl-3  pr-3 border-gray-300 items-end justify-start">
-            <Input
-              fullWidth
-              sx={{
-                fontFamily: "Montserrat",
-                fontSize: "12px",
-              }}
-              placeholder="Start Typing..."
-            ></Input>
-
-            <IconButton sx={{ padding: 0 }}>
-              {" "}
-              <SendIcon sx={{ width: 20 }} />
-            </IconButton>
-          </div>
-        </div>
+        <Chat />
       </div>
     </div>
   );
