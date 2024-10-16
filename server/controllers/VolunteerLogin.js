@@ -1,4 +1,5 @@
 const VolunteerModel = require("../Models/VolunteerModel");
+const { genrateAndSetCookie } = require("../utils/cookie");
 
 // Login controller
 const loginVolunteer = async (req, res) => {
@@ -21,6 +22,7 @@ const loginVolunteer = async (req, res) => {
       return res.status(400).json({ error: "Invalid password" });
     }
 
+    genrateAndSetCookie(volunteer._id, res);
     // Respond with success message and volunteer info
     res.status(200).json({
       message: "Login successful",
@@ -41,4 +43,16 @@ const loginVolunteer = async (req, res) => {
   }
 };
 
-module.exports = { loginVolunteer };
+const meVolunteer = async (req, res) => {
+  try {
+    const volunteer = await VolunteerModel.findById(req.userId)
+      .select("-password")
+      .select("+volunteer");
+    res.send(volunteer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = { loginVolunteer, meVolunteer };

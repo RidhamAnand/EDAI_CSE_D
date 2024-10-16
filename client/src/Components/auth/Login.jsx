@@ -1,28 +1,29 @@
 import React, { useState } from "react";
 import { Button, TextField, Typography, Box } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { loginVictim, loginVolunteer } from "../../Api/api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const queryClient = useQueryClient();
   let role = searchParams.get("role");
   if (!role || (role !== "volunteer" && role !== "victim")) role = "volunteer";
 
   const mutationFn = role === "volunteer" ? loginVolunteer : loginVictim;
 
-  const { mutate, isLoading, error } = useMutation({
+  const { mutate, isPending, error } = useMutation({
     mutationFn,
     onSuccess: (data) => {
-      //   console.log("Success:", data);
-      {
-        role === "volunteer"
-          ? navigate("/volunteer")
-          : navigate("/victim-help");
+      if (role === "volunteer") {
+        queryClient.invalidateQueries({ queryKey: ["volunteerUser"] });
+        navigate("/volunteer");
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["victimUser"] });
+        navigate("/victim-help");
       }
     },
     onError: (error) => {
@@ -93,10 +94,17 @@ const Login = () => {
               variant="contained"
               color="primary"
               sx={{ mt: 2 }}
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? "Submitting..." : "Submit"}
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
+            <Link
+              to={role == "volunteer" ? "/register" : "/register?role=victim"}
+            >
+              <p className="text-gray-700 hover:underline hover:text-black text-center">
+                Create a new Account? Register Now
+              </p>
+            </Link>
           </Box>
         </div>
       </div>

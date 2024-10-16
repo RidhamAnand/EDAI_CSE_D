@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Button, TextField, Typography, Box } from "@mui/material";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { registerVictim, registerVolunteer } from "../../Api/api"; // Adjust the import path as necessary
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,14 +20,18 @@ const Register = () => {
 
   const mutationFn = role === "volunteer" ? registerVolunteer : registerVictim;
 
-  const { mutate, isLoading, error } = useMutation({
+  const { mutate, isPending, error } = useMutation({
     mutationFn,
     onSuccess: (data) => {
       console.log("Registration successful:", data);
       {
         role === "volunteer"
-          ? navigate("/volunteer")
-          : navigate("/victim-help");
+          ? navigate("/volunteer") &&
+            queryClient.invalidateQueries({ queryKey: ["volunteerUser"] })
+          : navigate("/victim-help") &&
+            queryClient.invalidateQueries({
+              queryKey: ["victimUser"],
+            });
       }
     },
     onError: (error) => {
@@ -119,10 +124,13 @@ const Register = () => {
               variant="contained"
               color="primary"
               sx={{ mt: 2 }}
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? "Submitting..." : "Submit"}
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
+            <Link to={role == "volunteer" ? "/login" : "/login?role=victim"}>
+              <p>Already have an Account? Login Now</p>
+            </Link>
           </Box>
         </div>
       </div>
