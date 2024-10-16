@@ -3,6 +3,7 @@ const router = express.Router();
 const dotenv = require("dotenv");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ProblemModel = require("../Models/ProblemModel");
+const authMiddleware = require("../middleware/middleware");
 dotenv.config();
 
 router.post("/gemini-model", async (req, res) => {
@@ -73,21 +74,36 @@ router.post("/gemini-model", async (req, res) => {
 });
 
 router.post("/publish-post", async (req, res) => {
-
-  const { problemStatement,problemUrgency,problemCategory,problemSeverity,problemLocation} = req.body;
-  console.log(problemUrgency)
+  const {
+    problemStatement,
+    problemUrgency,
+    problemCategory,
+    problemSeverity,
+    problemLocation,
+    author,
+  } = req.body;
+  console.log(problemUrgency);
 
   const problem = new ProblemModel({
-    description : problemStatement,
-    category : problemCategory,
-    severity : problemSeverity,
-    priority : problemUrgency,
-    status: 'open',
+    description: problemStatement,
+    category: problemCategory,
+    severity: problemSeverity,
+    priority: problemUrgency,
+    status: "open",
     geoLocation: problemLocation,
-  })
+    author: author,
+  });
 
   await problem.save();
-  res.status(200).json({msg:"saved"})
-
+  res.status(200).json({ msg: "saved" });
 });
 module.exports = router;
+
+router.get("/get-posts", authMiddleware, async (req, res) => {
+  try {
+    const posts = await ProblemModel.find();
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch posts." });
+  }
+});
